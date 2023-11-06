@@ -1,10 +1,9 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView,DestroyAPIView
+from rest_framework.generics import ListAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import *
 from .serializers import *
-
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,9 +17,12 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-class UserView(ListAPIView):
+
+class UserListView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
@@ -38,7 +40,7 @@ class BookInfoView(APIView):
 
                 title = book_data.get('title', '')
                 author = book_data.get('authors', [{'name': ''}])[0]['name']
-                book = Book(title=title, author=author)
+                book = Book(title=title, author=author , isbn=isbn)
                 book.save()
 
                 return Response(book_data)
@@ -46,16 +48,6 @@ class BookInfoView(APIView):
                 return Response({"message": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"message": "Unable to fetch book data"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class BookSearchView(RetrieveAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-
-    def get_object(self):
-        title = self.kwargs.get('title')
-        obj = Book.objects.get(title=title)
-        return obj
 
 
 class BookListView(ListAPIView):
@@ -77,4 +69,10 @@ class BookDeleteView(DestroyAPIView):
     def get_object(self):
         pk = self.kwargs.get('pk')
         return Book.objects.get(pk=pk)
+
+
+class BookDetailView(viewsets.ModelViewSet):
+    queryset = Book.objects.all()
+    serializer_class = BookDetailSeralizer
+    lookup_field = 'slug'
 
